@@ -1,4 +1,4 @@
-package hello.embed;
+package hello.boot;
 
 import hello.spring.HelloConfig;
 import org.apache.catalina.Context;
@@ -8,9 +8,11 @@ import org.apache.catalina.startup.Tomcat;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
-public class EmbedTomcatSpringMain {
-    public static void main(String[] args) throws LifecycleException {
-        System.out.println("EmbedTomcatSpringMain.main");
+import java.util.List;
+
+public class MySpringApplication {
+    public static void run(Class configClass, String args[]) {
+        System.out.println("MySpringApplication.run" + List.of(args));
 
         //톰캣 설정
         Tomcat tomcat = new Tomcat();
@@ -20,15 +22,18 @@ public class EmbedTomcatSpringMain {
 
         //스프링 컨테이너 생성
         AnnotationConfigWebApplicationContext appContext = new AnnotationConfigWebApplicationContext();
-        appContext.register(HelloConfig.class);
+        appContext.register(configClass);
 
         // 스프링 MVC 디스패치 서블릿 생성, 스프링 컨테이너 연결
         DispatcherServlet dispatcher = new DispatcherServlet(appContext);
 
-        Context context = tomcat.addContext("","/");
-        tomcat.addServlet("","dispatcher",dispatcher);
-        context.addServletMappingDecoded("/","dispatcher");
-
-        tomcat.start();
+        Context context = tomcat.addContext("", "/");
+        tomcat.addServlet("", "dispatcher", dispatcher);
+        context.addServletMappingDecoded("/", "dispatcher");
+        try {
+            tomcat.start();
+        } catch (LifecycleException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
